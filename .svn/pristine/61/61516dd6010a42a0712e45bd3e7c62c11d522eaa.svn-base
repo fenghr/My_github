@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.soft863.mapper.UserMapper">
+<!--查询所有的部门  -->
+  <select id="query" resultType="com.soft863.entity.Dept">
+    select  * from j0305_g2_tb_dept
+  </select>
+
+	<insert id="insert" parameterType="com.soft863.entity.User">
+		<selectKey keyProperty="id" order="AFTER" resultType="Integer">
+			select last_insert_id() from dual
+		</selectKey>
+		insert into
+		j0305_g2_tb_user(name,dept,account,password,headimg,gender,email,mobile,birthday,state,memo)
+		values(#{name},#{dept},#{account},#{password},#{headimg},#{gender},#{email},#{mobile},#{birthday},#{state},#{memo})
+	</insert>
+	
+  
+  <!--查询所有的角色 -->
+  <select id="queryCole" resultType="com.soft863.entity.Role" parameterType="Integer">
+     select *  from  j0305_g2_tb_role where state = '1'
+  </select>
+  
+  <!--遍历所有的用户信息  -->
+      <select id="queryUser" resultType="com.soft863.entity.User" parameterType="com.soft863.entity.PageSplit">
+         select  *  from  j0305_g2_tb_user 
+         order by id desc
+         limit  #{start},#{p_size}
+      </select> 
+      
+      <!--查询用户总条数  --> 
+      <select id="allUser" resultType="Integer">
+       select count(1) from j0305_g2_tb_user
+      
+      </select>
+      
+      <!--插入中间表  -->
+       <insert id="insertId" parameterType="com.soft863.entity.User_Role">
+      <!--  begin
+       <foreach collection="" item="" index="" separator=";"> 
+        -->
+        insert into j0305_g2_tb_user_role(user_id,role_id) values(#{user_id},#{role_id})
+      <!--  </foreach> -->
+     </insert>  
+     
+     <!--编辑用户信息   根据id查找用户-->
+     <select id="update" resultType="com.soft863.entity.User">
+       select * from j0305_g2_tb_user  where id = #{id}
+     </select>
+   <!--通过用户id拿到中间表id  -->
+     <select id="queryRole" resultType="com.soft863.entity.User_Role">
+      select * from j0305_g2_tb_user_role  where user_id = #{user_id}
+     </select>
+     
+     
+     
+     <!--更新用户信息  -->
+     <update id="updateUser" parameterType="com.soft863.entity.User">
+        update j0305_g2_tb_user set 
+        name=#{name},dept=#{dept},account=#{account},password=#{password},headimg=#{headimg},gender=#{gender},email=#{email},mobile=#{mobile},birthday=#{birthday},
+        state=#{state},memo=#{memo} where id=#{id}
+     </update>
+     
+     
+     <!--通过用户id 删除用户拥有的角色  -->
+     <delete id="delete" parameterType="com.soft863.entity.User_Role">
+       delete from j0305_g2_tb_user_role  where user_id = #{user_id}
+     </delete>
+     <delete id="deleteUser" parameterType="com.soft863.entity.User">
+     delete from j0305_g2_tb_user where id = #{id}
+     </delete>
+   <insert id="insertUserRole" parameterType="com.soft863.entity.User_Role">
+      insert into j0305_g2_tb_user_role(user_id,role_id) values
+      <foreach collection="ids" item="roleid" separator=",">
+       (#{id},#{roleid})
+      </foreach>
+   </insert>
+   <!--拿出所有的用户的用户名  进行ajax校验-->
+   <select id="selectName" resultType="com.soft863.entity.User" parameterType="String">
+    select * from j0305_g2_tb_user where account = #{account}
+   </select>
+   
+   <!--通过用户名模糊查询  -->
+   <select id="queryName" resultType="com.soft863.entity.User" parameterType="com.soft863.entity.User">
+   select * from j0305_g2_tb_user
+   <where>
+     <if test="name != null and name != ''">
+        name like '${name}%'
+     </if>
+   </where>
+<!--    order by id desc
+   limit #{start},#{p_size} -->
+   </select>
+   
+   <!--导出  -->
+   <select id="download" resultType="com.soft863.entity.User">
+      select name,account,dept,gender,email from j0305_g2_tb_user
+   </select>
+ 
+</mapper>

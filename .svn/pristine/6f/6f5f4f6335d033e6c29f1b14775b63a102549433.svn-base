@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.soft863.mapper.RoleMapper">
+	<select id="find" resultType="com.soft863.entity.Code">
+		select * from j0305_g2_tb_code 
+	</select>
+	
+	<select id="judgeRole" resultType="com.soft863.entity.Role">
+		select * from j0305_g2_tb_role where name=#{name} 
+	</select>
+	
+	<!--存储角色  -->
+	<insert id="addRole" parameterType="com.soft863.entity.Role">
+		insert into j0305_g2_tb_role (name,state) values(#{name},#{state})
+	</insert>
+	<!--查询新注册用户ID  -->
+	<select id="updateId" resultType="com.soft863.entity.Role">
+		select * from j0305_g2_tb_role where name = #{name}
+	</select>
+	
+	<!--新角色ID与权限ID填入中间表  -->
+	<insert id="addRCid" parameterType="com.soft863.entity.Role_Code">
+		insert into j0305_g2_tb_role_code(role_id,code_id) values(#{role_id},#{code_id})
+	</insert>
+	
+	
+ 	<!--多表查询返回角色信息 权限  -->
+	<resultMap type="com.soft863.entity.Role" id="roleandcode">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="state" property="state"/>
+		<collection property="lis" ofType="com.soft863.entity.Code">
+			<result column="code" property="code"/>
+		</collection>
+	</resultMap> 
+	<select id="updateRole" resultMap="roleandcode" parameterType="com.soft863.entity.PageSplit">
+			select r.*,c.code
+			from (select * from j0305_g2_tb_role order by id desc  limit #{start},#{p_size})r, j0305_g2_tb_code c, j0305_g2_tb_role_code rc
+			where r.id=rc.role_id and c.id = rc.code_id	 
+			order by rc.role_id desc
+	</select> 
+	
+	<!--ID查询角色信息  -->
+	<select id="updaId" resultType="com.soft863.entity.Role">
+		select * from j0305_g2_tb_role where  id= #{id}
+	</select>
+	
+	<select id="referCid" resultType="com.soft863.entity.Role_Code"  >
+		select * from j0305_g2_tb_role_code where role_id = #{role_id}
+	</select>
+	
+	<!--修改角色信息  -->
+	<update id="alter" parameterType="com.soft863.entity.Role">
+		update j0305_g2_tb_role set  name=#{name} ,state= #{state} where id =#{id}
+	</update>
+	
+	<!--删除用户与角色中间表  -->
+	<delete id="deleteUser_role" parameterType="com.soft863.entity.Role">
+		delete from j0305_g2_tb_user_role where role_id=#{id}
+	</delete>
+	
+	
+	<!--循环添加角色权限  -->
+	<insert id="updateCoid" parameterType="com.soft863.entity.Role">
+		insert into j0305_g2_tb_role_code(role_id,code_id) values
+		<foreach collection="integers" item="cid" separator=",">
+			(#{id},#{cid})
+		</foreach>
+	
+	</insert>
+	
+	
+	
+	<!-- 删除角色权限 -->
+	<delete id="deleteCode" parameterType="com.soft863.entity.Role">
+		delete from j0305_g2_tb_role_code where role_id = #{id}
+	</delete>
+	
+	<!--删除角色信息  -->
+	<delete id="deleteRole" parameterType="com.soft863.entity.Role">
+		delete from j0305_g2_tb_role where id = #{id}
+	</delete>
+	
+	<!-- 模糊查询角色信息 -->
+	<resultMap type="com.soft863.entity.Role" id="query">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="state" property="state"/>
+		<collection property="lis" ofType="com.soft863.entity.Code">
+			<result column="code" property="code" />
+		</collection>
+	</resultMap>
+	<select id="inquireRole" resultMap="query" >
+		select r.*,c.code
+		from j0305_g2_tb_role r, j0305_g2_tb_code c,j0305_g2_tb_role_code rc
+		where  r.name like '%${name}%' and  r.id = rc.role_id and c.id=rc.code_id
+		order by r.id desc 
+	</select>
+	<!--查询所有角色个数  -->
+	<select id="countRole" resultType="Integer">
+		select count(1) from j0305_g2_tb_role 
+	</select>
+	
+	
+	<!--模糊查询分页  -->
+	<resultMap type="com.soft863.entity.Role" id="dim">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="state" property="state"/>
+		<collection property="lis" ofType="com.soft863.entity.Code">
+			<result column="code" property="code" />
+		</collection>
+	</resultMap>
+	<select id="dimRole" resultMap="dim" parameterType="com.soft863.entity.PageSplit">
+	select r.*,c.code
+	from (select * from j0305_g2_tb_role where name like '%${name}%' order by id desc  limit #{start},#{p_size})r, j0305_g2_tb_code c, j0305_g2_tb_role_code rc
+	where r.id=rc.role_id and c.id = rc.code_id	
+	order by rc.role_id desc
+	</select>
+	
+</mapper>

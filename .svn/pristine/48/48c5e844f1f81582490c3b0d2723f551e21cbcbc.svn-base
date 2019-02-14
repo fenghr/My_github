@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.soft863.mapper.ComplaintMapper">
+
+	<select id="complainAllMessage" resultType="com.soft863.entity.Complain">
+			select id,comop_name,to_comp_deptname,to_comp_name,comp_title,state,is_NM,
+			date_format(comp_time,'%Y-%m-%d %H:%i') comp_time  from j0305_g2_tb_complain
+			<where>
+			state != 0
+			</where>
+			order by comp_time desc
+			limit 0,6
+	</select>
+	
+	<select id="queryComplainAllMessage" resultType="com.soft863.entity.Complain">
+		select t1.id,t1.comp_id,t1.comp_deptname,t1.comp_deptid,
+		t1.comop_name,t1.comp_mobile,
+		date_format(t1.comp_time,'%Y-%m-%d %H:%i') comp_time,
+		t1.is_NM,
+		t1.comp_title,t1.to_comp_id,t1.to_comp_name,
+		t1.to_comp_deptname,t1.to_comp_deptid,t1.to_comp_content,t1.state
+		from j0305_g2_tb_complain t1 
+		<where>
+			t1.id = #{id}
+		</where>
+	</select>
+	
+	
+	
+	<resultMap type="com.soft863.entity.Complain" id="complainAllReply">
+				<id property="id" column="id"/>	
+				<result property="comp_id" column="comp_id"/>
+				<result property="comp_deptname" column="comp_deptname"/>
+				<result property="comop_name" column="comop_name"/>
+				<result property="comp_mobile" column="comp_mobile"/>
+				<result property="comp_time" column="comp_time"/>
+				<result property="is_NM" column="is_NM"/>
+				<result property="comp_title" column="comp_title"/>
+				<result property="to_comp_name" column="to_comp_name"/>
+				<result property="to_comp_deptname" column="to_comp_deptname"/>
+				<result property="to_comp_content" column="to_comp_content"/>
+				<result property="state" column="state"/>
+		<association property="cr" javaType="com.soft863.entity.Complain_reply">
+				<id property="reply_content" column="reply_content"/>
+				<result property="replyer_name" column="replyer_name"/>
+				<result property="reply_deptname" column="reply_deptname"/>
+		</association>
+	</resultMap>
+	
+	<select id="queryComplainAllMessage11" resultMap="complainAllReply">
+		select 
+		t1.id,t1.comp_id,t1.comp_deptname,t1.comp_deptid,
+		t1.comop_name,t1.comp_mobile,
+		date_format(t1.comp_time,'%Y-%m-%d %H:%i') comp_time,
+		t1.is_NM,
+		t1.comp_title,t1.to_comp_id,t1.to_comp_name,
+		t1.to_comp_deptname,t1.to_comp_deptid,t1.to_comp_content,t1.state
+		 ,t2.* from j0305_g2_tb_complain t1, j0305_g2_tb_complain_reply t2
+		<where>
+			t1.id = #{id} and t2.complain_id = #{id}
+		</where>	
+	</select>
+	
+	
+
+	<select id="queryAllDept" resultType="com.soft863.entity.Dept">
+		select id,deptname from j0305_g2_tb_dept 
+	</select>
+	
+	<select id="queryByUserName" resultType="com.soft863.entity.User">
+		select * from j0305_g2_tb_User 
+		<where>
+		 dept =(select deptname from j0305_g2_tb_dept where id = #{dept})
+		</where>
+	</select>
+	
+	<select id="additionalInformation" resultType="com.soft863.entity.Complain">
+			select t1.name comop_name,t1.dept comp_deptid,t1.mobile comp_mobile, t2.deptname comp_deptname ,t3.deptname to_comp_deptname,t4.name to_comp_name
+			from j0305_g2_tb_user t1,j0305_g2_tb_dept t2,j0305_g2_tb_dept t3,j0305_g2_tb_user t4
+			<where>
+			 t1.id = #{comp_id} 
+			 and t2.id = #{to_comp_deptid} 
+			 and t3.id = #{to_comp_deptid} 
+			 and t4.id = #{comp_id}
+			</where>
+	</select>
+	
+	<insert id="addComplainMessage" parameterType="com.soft863.entity.Complain" keyProperty="id" useGeneratedKeys="true">
+		insert into j0305_g2_tb_complain 
+		(comp_id,comp_deptname,comp_deptid,comop_name,comp_mobile,comp_time,is_NM,comp_title,to_comp_id,to_comp_name,to_comp_deptname,to_comp_deptid,to_comp_content,state)
+		values(#{comp_id},#{comp_deptname},#{comp_deptid},#{comop_name},
+		#{comp_mobile},now(),#{is_NM},#{comp_title},#{to_comp_id},
+		#{to_comp_name},#{to_comp_deptname},#{to_comp_deptid},#{to_comp_content},0)
+	</insert>
+	
+	<select id="complaintManagement" parameterType="com.soft863.entity.PageSplit" resultType="com.soft863.entity.Complain" >
+		select id,comp_title,to_comp_deptname,to_comp_name,
+		date_format(comp_time,'%Y-%m-%d %H:%i') comp_time,state
+			 from j0305_g2_tb_complain 
+			 order by comp_time desc
+			 limit #{start},#{p_size}
+	</select>
+	
+	
+	
+	<resultMap type="com.soft863.entity.Complain" id="ComplainMessage">
+				<id property="id" column="id"/>	
+				<result property="comp_id" column="comp_id"/>
+				<result property="comp_deptname" column="comp_deptname"/>
+				<result property="comop_name" column="comop_name"/>
+				<result property="comp_mobile" column="comp_mobile"/>
+				<result property="comp_time" column="comp_time"/>
+				<result property="is_NM" column="is_NM"/>
+				<result property="comp_title" column="comp_title"/>
+				<result property="to_comp_name" column="to_comp_name"/>
+				<result property="to_comp_deptname" column="to_comp_deptname"/>
+				<result property="to_comp_content" column="to_comp_content"/>
+				<result property="state" column="state"/>
+		<association property="cr" javaType="com.soft863.entity.Complain_reply">
+				<id property="replyer_id" column="replyer_id"/>
+				<result property="replyer_name" column="replyer_name"/>
+				<result property="reply_deptname" column="reply_deptname"/>
+		</association>
+	</resultMap>
+	
+	<select id="acceptComplainMessage" resultMap="ComplainMessage">
+			select 
+			t1.id,t1.comp_id,t1.comp_deptname,t1.comp_deptid,
+			t1.comop_name,t1.comp_mobile,
+			date_format(t1.comp_time,'%Y-%m-%d %H:%i') comp_time,
+			t1.is_NM,
+			t1.comp_title,t1.to_comp_id,t1.to_comp_name,
+			t1.to_comp_deptname,t1.to_comp_deptid,t1.to_comp_content,t1.state,
+			t2.id replyer_id,t2.name replyer_name,t2.dept reply_deptname  
+			from j0305_g2_tb_user t2, j0305_g2_tb_complain t1
+			<where>
+			 t1.id = #{complain_id} and t2.id = #{replyer_id}
+			</where>
+	</select>
+	
+	
+	<insert id="saveAcceptComplainReplyMessage" parameterType="com.soft863.entity.Complain_reply">
+		insert into j0305_g2_tb_complain_reply 
+		(complain_id,replyer_id,replyer_deptid,reply_time,replyer_name,reply_deptname,reply_content)
+		values(#{complain_id},#{replyer_id},#{replyer_deptid},now(),#{replyer_name},#{reply_deptname},#{reply_content})
+	</insert>
+	
+	<update id="updateComplainState">
+		update j0305_g2_tb_complain set state='1' where id = #{complain_id} 
+	</update>
+	
+	
+	<select id="totalCount" resultType="Integer">
+			select count(1) from j0305_g2_tb_complain
+	</select>
+	
+	
+	
+	<select id="doSearchFuzzyQuery" parameterType="com.soft863.entity.FuzzyQuery" resultType="com.soft863.entity.Complain">
+			select id,comp_title,to_comp_deptname,to_comp_name,
+			date_format(comp_time,'%Y-%m-%d %H:%i') comp_time,state
+			 from j0305_g2_tb_complain 
+			 <where>
+			 <if test="comp_Searchtitle != null and comp_Searchtitle != ''">
+			 		 comp_title like '%${comp_Searchtitle}%'
+			 </if>
+			 <if test="comp_SearchstarTime != null and comp_SearchstarTime != '' and comp_SearchendTime != null and comp_SearchendTime != ''">
+			 		and (comp_time between #{comp_SearchstarTime} and #{comp_SearchendTime})
+			 </if>
+			 <!-- 开始时间 -->
+			 <if test="comp_SearchstarTime != null and comp_SearchstarTime != '' and  comp_SearchendTime =='' and comp_SearchendTime != null">
+			 		and comp_time between #{comp_SearchstarTime} and now()
+			 </if>
+			 <!-- 结束时间 -->
+			 <if test="comp_SearchendTime != null and comp_SearchendTime != '' and comp_SearchstarTime =='' and comp_SearchstarTime != null">
+			 		and comp_time <![CDATA[<]]> #{comp_SearchendTime}
+			 </if>
+			 <if test="Searchstate != null and Searchstate != ''">
+			 		and state like #{Searchstate}
+			 </if>
+			 </where>
+			 order by comp_time desc
+			 limit #{start},#{p_size}
+	</select>
+	
+	
+	<select id="likeCount" resultType="Integer" parameterType="com.soft863.entity.FuzzyQuery">
+			select count(1) from j0305_g2_tb_complain
+			 <where>
+			 <if test="comp_Searchtitle != null and comp_Searchtitle != ''">
+			 		 comp_title like '%${comp_Searchtitle}%'
+			 </if>
+			 <if test="comp_SearchstarTime != null and comp_SearchstarTime != '' and comp_SearchendTime != null and comp_SearchendTime != ''">
+			 		and (comp_time between #{comp_SearchstarTime} and #{comp_SearchendTime})
+			 </if>
+			 <!-- 开始时间 -->
+			 <if test="comp_SearchstarTime != null and comp_SearchstarTime != '' and  comp_SearchendTime =='' and comp_SearchendTime != null">
+			 		and comp_time between #{comp_SearchstarTime} and now()
+			 </if>
+			 <!-- 结束时间 -->
+			 <if test="comp_SearchendTime != null and comp_SearchendTime != '' and comp_SearchstarTime =='' and comp_SearchstarTime != null">
+			 		and comp_time <![CDATA[<]]> #{comp_SearchendTime}
+			 </if>
+			 <if test="Searchstate != null and Searchstate != ''">
+			 		and state like #{Searchstate}
+			 </if>
+			 </where>
+	</select>
+
+	<update id="timing">
+			update j0305_g2_tb_complain set state = 2  where id = #{id} and state = 0
+	</update>	
+	
+	<select id="allIdComp_time" resultType="com.soft863.entity.Complain">
+			select id,
+			date_format(comp_time,'%Y-%m-%d %H:%i:%s') comp_time
+			 from j0305_g2_tb_complain  where state = 0
+	</select>
+	
+	<select id="showStatisticsChart" resultType="com.soft863.entity.StatisticsChart"  >
+			SELECT count(1) complainCount,month(comp_time) month,year(comp_time) year 
+			FROM j0305_g2_tb_complain 
+			where year(comp_time)=#{year} group by month(comp_time)
+	</select>
+	
+	<select id="statisticsChartYear" resultType="com.soft863.entity.StatisticsChart">
+			select distinct year(comp_time) year from j0305_g2_tb_complain
+	</select>
+	
+</mapper>

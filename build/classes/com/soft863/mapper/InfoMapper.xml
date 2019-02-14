@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.soft863.mapper.InfoMapper">
+
+	<resultMap type="com.soft863.entity.Info" id="maps">
+		<id column="info_id" property="info_id" />
+		<result column="title" property="title" />
+		<result column="create_time" property="create_time" />
+		<result column="state" property="state" />
+		<association property="user" javaType="com.soft863.entity.User">
+			<result column="name" property="name" />
+		</association>
+
+		<collection property="types" ofType="com.soft863.entity.Types">
+			<result column="tname" property="tname" />
+		</collection>
+	</resultMap>
+	<!-- 查询 -->
+	<select id="queryInfo" parameterType="com.soft863.entity.Info" resultMap="maps">
+		select i.info_id,i.title,t.name tname,u.name,date_format(i.create_time,'%Y-%m-%d %H:%i') create_time,i.state
+		from j0305_g2_tb_info i,j0305_g2_tb_type t,j0305_g2_tb_user u
+		where
+		t.id=i.typeid and i.creatorid = u.id
+		<if test="title!=null and title!=''">
+			and i.title like '%${title}%'
+		</if>
+		order by i.create_time desc limit #{start},#{p_size}
+	</select>
+	<!-- 前台查询  date_format(now(),'%Y-%m-%d %H:%i')-->
+	<select id="queryInfos" resultMap="maps">
+		select
+		i.info_id,i.title,t.name tname,u.name,date_format(i.create_time,'%Y-%m-%d %H:%i') create_time,i.state
+		from
+		j0305_g2_tb_info i,j0305_g2_tb_type t,j0305_g2_tb_user u
+		where
+		t.id=i.typeid and i.creatorid = u.id and i.state='1'
+		order by
+		i.create_time desc
+	</select>
+	<!--删除 -->
+	<delete id="delInfo">
+		delete from j0305_g2_tb_info where info_id in
+		<foreach collection="array" open="(" separator="," close=")"
+			item="id">
+			#{id}
+		</foreach>
+	</delete>
+
+	<!--excel -->
+	<select id="queryexcel" resultType="com.soft863.entity.Info">
+		select * from
+		j0305_g2_tb_info
+	</select>
+	<!--修改 -->
+	<update id="updateState">
+		update j0305_g2_tb_info
+		<set>
+			<if test="state==1">
+				state = '0'
+			</if>
+			<if test="state==0">
+				state = '1'
+			</if>
+		</set>
+		where info_id = #{info_id}
+	</update>
+	<!-- 添加 -->
+	<insert id="addInfo">
+		insert into
+		j0305_g2_tb_info(typeid,source,title,content,memo,creatorid,create_time,state)
+		value(#{typeid},#{source},#{title},#{content},#{memo},#{creatorid},now(),'0');
+	</insert>
+	<!-- 查询type -->
+	<select id="queryType" resultType="com.soft863.entity.Types">
+		select id,name tname from
+		j0305_g2_tb_type
+	</select>
+	<!--通过id查询 -->
+		<resultMap type="com.soft863.entity.Info" id="map3">
+		<id column="info_id" property="info_id" />
+		<result column="title" property="title" />
+		<result column="typeid" property="typeid" />
+		<result column="create_time" property="create_time" />
+		<result column="state" property="state" />
+		
+		<result column="source" property="source" />
+		<result column="content" property="content" />
+		<result column="memo" property="memo" />
+		<association property="user" javaType="com.soft863.entity.User">
+			<id column="id" property="id"/>
+			<result column="name" property="name" />
+		</association>
+
+		<collection property="types" ofType="com.soft863.entity.Types">
+			<id column="id" property="id"/>
+			<result column="tname" property="tname" />
+		</collection>
+	</resultMap>
+	<select id="queryInfoids" resultMap="map3">
+	<!-- 	select
+		i.*,u.*,t.* -->
+		select i.info_id,i.typeid,i.title,i.source,i.content,i.memo,t.id,t.name tname,u.id,u.name,i.create_time,i.state
+		from
+		j0305_g2_tb_info i,j0305_g2_tb_type t,j0305_g2_tb_user u
+		where
+		t.id=i.typeid and i.creatorid = u.id and i.info_id=#{info_id}
+	</select>
+	<!-- 修改信息 -->
+	<update id="updateInfo" parameterType="com.soft863.entity.Info">
+		update j0305_g2_tb_info set typeid=#{typeid},source=#{source},title=#{title},content=#{content},memo=#{memo}
+		where info_id=#{info_id}
+	</update>
+	<!-- 总条数 -->
+	<select id="countInfo" parameterType="com.soft863.entity.Info" resultType="Integer">
+		select count(1) from j0305_g2_tb_info 
+		<where>
+		<if test="title!=null and title!=''"></if>
+			title like '%${title}%'
+		</where>
+	</select>
+</mapper>
